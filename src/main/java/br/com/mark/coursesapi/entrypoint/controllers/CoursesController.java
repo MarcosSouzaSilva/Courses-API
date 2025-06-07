@@ -1,13 +1,19 @@
 package br.com.mark.coursesapi.entrypoint.controllers;
 
+import br.com.mark.coursesapi.config.Test;
 import br.com.mark.coursesapi.dataprovider.entity.User;
 import br.com.mark.coursesapi.entrypoint.handler.exceptions.AccessDeniedException;
+import br.com.mark.coursesapi.entrypoint.handler.exceptions.CoursesCreationException;
 import br.com.mark.coursesapi.entrypoint.handler.exceptions.InvalidTokenException;
+import br.com.mark.coursesapi.entrypoint.handler.exceptions.UserNotFoundException;
+import br.com.mark.coursesapi.entrypoint.mapper.request.CoursesEntryPointRequestMapper;
 import br.com.mark.coursesapi.entrypoint.mapper.request.UserEntryPointRequestMapper;
+import br.com.mark.coursesapi.entrypoint.model.request.CourseModelRequest;
 import br.com.mark.coursesapi.entrypoint.model.request.UserModelRequest;
 import br.com.mark.coursesapi.entrypoint.mapper.request.TeacherEntryPointRequestMapper;
 import br.com.mark.coursesapi.entrypoint.model.request.TeacherModelRequest;
 import br.com.mark.coursesapi.entrypoint.model.request.UserOutModelRequest;
+import br.com.mark.coursesapi.usecases.interfaces.CoursesUseCase;
 import br.com.mark.coursesapi.usecases.interfaces.TeacherUseCase;
 import br.com.mark.coursesapi.usecases.interfaces.UserUseCase;
 import jakarta.validation.Valid;
@@ -15,6 +21,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1/courses")
@@ -32,6 +40,7 @@ public class CoursesController {
 
     private final UserUseCase userUseCaseInterface;
 
+    private final CoursesUseCase coursesUseCaseInterface;
 
     @PostMapping("/signIn")
     public ResponseEntity<?> signInUser(@Valid @RequestBody UserModelRequest userModelRequest) throws Exception {
@@ -57,22 +66,26 @@ public class CoursesController {
         return userUseCaseInterface.getAll(page, size, token);
     }
 
+    @GetMapping("/auth/refresh/{token}")
+    public ResponseEntity<?> refreshToken(@PathVariable String token) throws Exception {
+        return userUseCaseInterface.refreshToken(token);
+    }
+
     @PostMapping("/signOut")
-    public ResponseEntity<?> signInUser(@Valid @RequestBody UserOutModelRequest userDomain) throws Exception {
+    public ResponseEntity<?> signOutUser(@Valid @RequestBody UserOutModelRequest userDomain) throws Exception {
         var user = UserEntryPointRequestMapper.convertUserOutToEntity(userDomain);
 
         return userUseCaseInterface.signOutUser(user);
     }
 
-    /*// em desenvolvimento
-    @PostMapping(value = "/aulas", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> createClassOfCourses(
-            @RequestPart("coursesDomain") CoursesDomain coursesDomain,
-            @RequestPart("imagem") MultipartFile imagem,
-            @RequestPart("video") MultipartFile video) {
+    @PostMapping("/upload")
+    public ResponseEntity<?> uploadFile(@ModelAttribute CourseModelRequest request, @RequestHeader("Authorization") String token) throws UserNotFoundException, AccessDeniedException, IOException, InvalidTokenException, CoursesCreationException {
+        var course = CoursesEntryPointRequestMapper.convert(request);
 
-        return ResponseEntity.ok("Aula criada com sucesso!");
-    }*/
+        return coursesUseCaseInterface.saveCourses(course, token);
+    }
+
+
 
 
 }

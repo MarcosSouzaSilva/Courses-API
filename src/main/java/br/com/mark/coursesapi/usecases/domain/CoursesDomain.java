@@ -1,12 +1,16 @@
 package br.com.mark.coursesapi.usecases.domain;
 
 import br.com.mark.coursesapi.usecases.domain.enums.DifficultyLevel;
+import br.com.mark.coursesapi.usecases.domain.enums.TypeCourses;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,23 +24,29 @@ public class CoursesDomain {
 
 
 
-    String title;
+    private String title;
 
-    String description;
+    private String description;
 
-    BigDecimal price;
+    private MultipartFile video;
 
-    String thumbnailUrl;
+    private MultipartFile image;
 
-    DifficultyLevel level; // BEGINNER, INTERMEDIATE, ADVANCED
+    private BigDecimal price;
 
-    CategoryDomain categoryDomain;
+    private MultipartFile thumbnailUrl;
 
-    Boolean published;
+    @Enumerated(EnumType.STRING)
+    private DifficultyLevel level; // BEGINNER, INTERMEDIATE, ADVANCED
 
-    LocalDateTime createdAt;
+    @Enumerated(EnumType.STRING)
+    private TypeCourses typeCourses;
 
-    LocalDateTime updatedAt;
+    private Boolean published;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 
     @ManyToOne
     private List<UserDomain> userDomain;

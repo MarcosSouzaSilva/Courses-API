@@ -5,6 +5,8 @@ import br.com.mark.coursesapi.usecases.domain.TeacherDomain;
 
 public interface TeacherGateway {
 
-    Teachers save(TeacherDomain teacherDomainUseCase);
+    Teachers save(TeacherDomain teacherDomainUseCase) throws Exception;
+
+    Teachers refreshToken(Long id)  throws Exception;
 
 }

@@ -21,12 +21,13 @@ public class ConfigPathSecurity {
         return httpSecurity
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers(
-                            "/api/v1/courses/signIn",
-                            "/api/v1/courses/signOut",
+                            "/api/v1/courses/**"
+                            /*"/api/v1/courses/signOut",
                             "/api/v1/courses/allStudent",
+                            "/api/v1/courses/upload",
                             "/api/v1/courses",
                             "/api/v1/courses/**",
-                            "/api/v1/courses/teachers"
+                            "/api/v1/courses/teachers"*/
                     ).permitAll();
                     auth.anyRequest().authenticated();
                 })

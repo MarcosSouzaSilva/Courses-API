@@ -1,6 +1,5 @@
 package br.com.mark.coursesapi.entrypoint.model.request;
 
-import br.com.mark.coursesapi.usecases.domain.enums.Role;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

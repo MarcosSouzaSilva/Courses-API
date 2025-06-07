@@ -4,9 +4,9 @@ public enum DifficultyLevel {
 
     BEGINNER("Iniciante"),
 
-    INTERMEDIATE("Intermediario"),
+    INTERMEDIATE("Intermediário"),
 
-    ADVANCED("Avancado");
+    ADVANCED("Avançado");
 
     private final String level;
 

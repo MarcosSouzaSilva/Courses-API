@@ -1,12 +1,14 @@
 package br.com.mark.coursesapi.dataprovider.entity;
 
 import br.com.mark.coursesapi.usecases.domain.enums.DifficultyLevel;
+import br.com.mark.coursesapi.usecases.domain.enums.TypeCourses;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
@@ -33,20 +35,21 @@ public class Courses {
 
     private String description;
 
-    private String video;
+    @Lob // Informa ao JPA que esse campo será armazenado como um tipo binário grande (BLOB no banco)
+    private byte[] video; // Representa dados binários. O conteúdo já deve estar convertido em binário (byte[]) antes de ser atribuído
 
-    private String image;
+    @Lob
+    private byte[] image;
 
     private BigDecimal price;
 
-    private String thumbnailUrl;
+    @Lob
+    private byte[] thumbnailUrl;
 
     @Enumerated(EnumType.STRING)
     private DifficultyLevel level; // BEGINNER, INTERMEDIATE, ADVANCED
 
-/*
-    private Category category;
-*/
+    private TypeCourses typeCourses;
 
     private Boolean published;
 
@@ -55,7 +58,7 @@ public class Courses {
     private LocalDateTime updatedAt;
 
     @ManyToOne
-    private User user;
+    private Teachers teachers;
 
     @OneToMany
     private List<Module> module;

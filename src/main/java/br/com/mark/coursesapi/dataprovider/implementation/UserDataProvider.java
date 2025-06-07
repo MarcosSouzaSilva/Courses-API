@@ -8,6 +8,7 @@ import br.com.mark.coursesapi.entrypoint.handler.exceptions.AccessDeniedExceptio
 import br.com.mark.coursesapi.entrypoint.handler.exceptions.DuplicateContactException;
 import br.com.mark.coursesapi.entrypoint.handler.exceptions.InvalidCredentialsException;
 import br.com.mark.coursesapi.entrypoint.handler.exceptions.InvalidTokenException;
+import br.com.mark.coursesapi.entrypoint.handler.exceptions.UserNotFoundException;
 import br.com.mark.coursesapi.usecases.domain.UserDomain;
 import br.com.mark.coursesapi.usecases.domain.UserOutDomain;
 import br.com.mark.coursesapi.usecases.gateway.UserGateway;
@@ -18,8 +19,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 @AllArgsConstructor
@@ -40,15 +39,11 @@ public class UserDataProvider implements UserGateway {
     }
 
     @Override
-    public Optional<User> getById(Long id) throws InvalidCredentialsException {
+    public Long getById(Long id) throws UserNotFoundException {
 
-        Optional<User> user;
+        if (usersRepository.findById(id).isEmpty()) throw new UserNotFoundException();
 
-        if (usersRepository.findById(id).isEmpty()) throw new InvalidCredentialsException();
-
-        user = usersRepository.findById(id);
-
-        return user;
+        return id;
     }
 
     @Override
@@ -56,9 +51,9 @@ public class UserDataProvider implements UserGateway {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        String verifyIfUserIsADMIN = JwtUtils.getRoleForToken(token);
+        String verifyIfUserIsADMIN = JwtUtils.getRoleFromToken(token);
 
-        JwtUtils.validateToken(token);
+        JwtUtils.isValidToken(token);
 
         UserLoginValidator.getAllValidator(verifyIfUserIsADMIN);
 
@@ -74,9 +69,24 @@ public class UserDataProvider implements UserGateway {
 
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-        if (!passwordEncoder.matches(domain.getPassword(), findUser.get().getPassword())) throw new InvalidCredentialsException();
+        if (!passwordEncoder.matches(domain.getPassword(), findUser.get().getPassword()))
+            throw new InvalidCredentialsException();
 
         return findUser.get();
+    }
+
+    @Override
+    public User refreshToken(Long id) throws Exception {
+
+
+        var idUser = usersRepository.findById(id);
+
+        if (idUser.isEmpty()) throw new Exception();
+
+        if (idUser.get().getId() == null) throw new Exception();
+
+
+        return idUser.get();
     }
 
 

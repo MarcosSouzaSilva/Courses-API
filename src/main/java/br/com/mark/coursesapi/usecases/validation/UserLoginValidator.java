@@ -31,12 +31,11 @@ public class UserLoginValidator {
 
     public void getByTokenValidator(String token) throws AccessDeniedException, InvalidTokenException {
 
-        JwtUtils.validateToken(token);
+        JwtUtils.isValidToken(token);
 
-        var roleForToken = JwtUtils.getRoleForToken(token);
+        var roleForToken = JwtUtils.getRoleFromToken(token);
 
-        if (!roleForToken.equals("Administrador"))
-            throw new AccessDeniedException(); // lancar execao de acesso restrito
+        if (!roleForToken.equals("Administrador")) throw new AccessDeniedException(); // lancar execao de acesso restrito
 
     }
 
@@ -48,13 +47,9 @@ public class UserLoginValidator {
 
     }
 
-    public static void getAllValidator (String token) throws AccessDeniedException {
+    public static void getAllValidator(String token) throws AccessDeniedException {
         if (!token.equalsIgnoreCase("ADMINISTRADOR")) throw new AccessDeniedException();
     }
-
-
-
-
 
 
 }

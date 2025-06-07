@@ -1,12 +1,15 @@
 package br.com.mark.coursesapi.entrypoint.handler;
 
 import br.com.mark.coursesapi.entrypoint.handler.exceptions.AccessDeniedException;
+import br.com.mark.coursesapi.entrypoint.handler.exceptions.CoursesCreationException;
 import br.com.mark.coursesapi.entrypoint.handler.exceptions.DuplicateContactException;
 import br.com.mark.coursesapi.entrypoint.handler.exceptions.InvalidCredentialsException;
 import br.com.mark.coursesapi.entrypoint.handler.exceptions.InvalidEmailException;
+import br.com.mark.coursesapi.entrypoint.handler.exceptions.InvalidPasswordException;
 import br.com.mark.coursesapi.entrypoint.handler.exceptions.InvalidPhoneNumberException;
 import br.com.mark.coursesapi.entrypoint.handler.exceptions.InvalidTokenException;
 import br.com.mark.coursesapi.entrypoint.handler.exceptions.InvalidYearException;
+import br.com.mark.coursesapi.entrypoint.handler.exceptions.TeachersCreationException;
 import br.com.mark.coursesapi.entrypoint.handler.exceptions.UserCreationException;
 import br.com.mark.coursesapi.entrypoint.handler.exceptions.UserNotFoundException;
 import br.com.mark.coursesapi.usecases.domain.Messages.ErrorCodeEnum;
@@ -15,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.HttpClientErrorException;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,7 +38,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidEmailException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidRequestOfEmail(InvalidEmailException ex) {
+
         Map<String, Object> errorResponse = new HashMap<>();
+
         errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
         errorResponse.put("error", InvalidEmailException.class.getSimpleName());
         errorResponse.put("message", ErrorCodeEnum.A0002.getMessage());
@@ -92,7 +99,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
-
     @ExceptionHandler(DuplicateContactException.class)
     public ResponseEntity<Map<String, Object>> duplicatedContactException() {
         Map<String, Object> errorResponse = new HashMap<>();
@@ -117,6 +123,18 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(HttpClientErrorException.Unauthorized.class)
+    public ResponseEntity<Map<String, Object>> unauthorizedException() {
+        Map<String, Object> errorResponse = new HashMap<>();
+
+        errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
+        errorResponse.put("error", HttpClientErrorException.Unauthorized.class.getSimpleName());
+        errorResponse.put("message", ErrorCodeEnum.A00011.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> accessDeniedException() {
         Map<String, Object> errorResponse = new HashMap<>();
@@ -127,6 +145,41 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
+
+    @ExceptionHandler(CoursesCreationException.class)
+    public ResponseEntity<Map<String, Object>> coursesCreationException() {
+        Map<String, Object> errorResponse = new HashMap<>();
+
+        errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
+        errorResponse.put("error", CoursesCreationException.class.getSimpleName());
+        errorResponse.put("message", ErrorCodeEnum.A0005.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(TeachersCreationException.class)
+    public ResponseEntity<Map<String, Object>> teachersCreationException() {
+        Map<String, Object> errorResponse = new HashMap<>();
+
+        errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
+        errorResponse.put("error", TeachersCreationException.class.getSimpleName());
+        errorResponse.put("message", ErrorCodeEnum.A0005.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(InvalidPasswordException.class)
+    public ResponseEntity<Map<String, Object>> invalidPasswordException() {
+        Map<String, Object> errorResponse = new HashMap<>();
+
+        errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
+        errorResponse.put("error", InvalidPasswordException.class.getSimpleName());
+        errorResponse.put("message", ErrorCodeEnum.A00010.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+
 
 
 

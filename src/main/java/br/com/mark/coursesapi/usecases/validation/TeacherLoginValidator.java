@@ -16,10 +16,11 @@ import java.util.Set;
 public class TeacherLoginValidator {
 
 
-    public TeacherDomain saveTeacherValidator(TeacherDomain teachersDomain) throws Exception {
+    public void teacherValidator(TeacherDomain teachersDomain) throws Exception {
 
         Set<TypeCourses> listCourses = new HashSet<>(Arrays.asList(TypeCourses.DESIGN_MULTIMEDIA,
                 TypeCourses.BUSINESS_ENTREPRENEURSHIP,
+                TypeCourses.TECHNOLOGY_DATA,
                 TypeCourses.PROGRAMMING_DEVELOPMENT,
                 TypeCourses.MARKETING_SALES));
 
@@ -33,7 +34,6 @@ public class TeacherLoginValidator {
 
         if (!listCourses.contains(teachersDomain.getCourses())) throw new InvalidCoursesException();
 
-        return teachersDomain;
     }
 
 

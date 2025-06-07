@@ -3,7 +3,6 @@ package br.com.mark.coursesapi.dataprovider.mapper;
 import br.com.mark.coursesapi.dataprovider.entity.Teachers;
 import br.com.mark.coursesapi.usecases.domain.TeacherDomain;
 import br.com.mark.coursesapi.usecases.domain.enums.Role;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 

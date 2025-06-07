@@ -1,16 +1,17 @@
 package br.com.mark.coursesapi.usecases.service;
 
-
 import br.com.mark.coursesapi.dataprovider.entity.User;
 import br.com.mark.coursesapi.dataprovider.implementation.UserDataProvider;
 import br.com.mark.coursesapi.entrypoint.handler.exceptions.AccessDeniedException;
 import br.com.mark.coursesapi.entrypoint.handler.exceptions.InvalidCredentialsException;
 import br.com.mark.coursesapi.entrypoint.handler.exceptions.InvalidTokenException;
+import br.com.mark.coursesapi.entrypoint.handler.exceptions.UserNotFoundException;
 import br.com.mark.coursesapi.usecases.domain.UserDomain;
 import br.com.mark.coursesapi.config.jwt.AuthenticationResponse;
 import br.com.mark.coursesapi.config.jwt.JwtUtils;
 import br.com.mark.coursesapi.usecases.domain.UserOutDomain;
 import br.com.mark.coursesapi.usecases.gateway.UserGateway;
+import br.com.mark.coursesapi.usecases.interfaces.EmailUseCase;
 import br.com.mark.coursesapi.usecases.interfaces.UserUseCase;
 import br.com.mark.coursesapi.usecases.validation.UserLoginValidator;
 import lombok.AllArgsConstructor;
@@ -26,18 +27,18 @@ import java.util.Objects;
 @AllArgsConstructor
 public class UserUseCaseImpl implements UserUseCase {
 
-
     private final UserDataProvider userDataProvider;
 
-    private UserGateway userGateway;
+    private final UserGateway userGateway;
 
     private final UserLoginValidator useCaseUser;
 
     private final PasswordEncoder passwordEncoder;
 
+    private final EmailUseCase emailSender;
 
     @Override
-    public ResponseEntity<?> saveUser(UserDomain userDomain) throws Exception {
+    public ResponseEntity<AuthenticationResponse> saveUser(UserDomain userDomain) throws Exception {
 
         var validator = useCaseUser.savedUserVerify(userDomain);
 
@@ -45,46 +46,51 @@ public class UserUseCaseImpl implements UserUseCase {
 
         var userEntity = userGateway.save(validator);
 
-        AuthenticationResponse authenticationResponse = new AuthenticationResponse
-                (JwtUtils.generateTokenForUser(userEntity), JwtUtils.generateRefreshTokenForUser(userEntity), null);
+        AuthenticationResponse authenticationResponse = new AuthenticationResponse(JwtUtils.generateAccessTokenForUser(userEntity), JwtUtils.generateRefreshTokenForUser(userEntity));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(authenticationResponse);
     }
 
-
     @Override
-    public ResponseEntity<?> getById(Long id, String token) throws InvalidTokenException, InvalidCredentialsException, AccessDeniedException {
+    public ResponseEntity<Long> getById(Long id, String token) throws InvalidCredentialsException, InvalidTokenException, UserNotFoundException, AccessDeniedException {
 
-        JwtUtils.validateToken(token);
+        Long idToken = userGateway.getById(JwtUtils.getIdFromBearerToken(token));
 
-        var idToken = userGateway.getById(JwtUtils.getIdForToken(token));
-
-        if (!Objects.equals(id, idToken.get().getId())) throw new InvalidCredentialsException();
+        if (!Objects.equals(id, idToken)) throw new InvalidCredentialsException();
 
         useCaseUser.getByTokenValidator(token);
 
-        return ResponseEntity.status(HttpStatus.OK).body(userGateway.getById(idToken.get().getId()));
-
+        return ResponseEntity.status(HttpStatus.OK).body(userGateway.getById(idToken));
     }
 
+    @Override
     public ResponseEntity<Page<User>> getAll(int page, int size, String token) throws InvalidTokenException, AccessDeniedException {
-        if (token != null && token.startsWith("Bearer ")) {
-            String tokenValid = token.substring(7);
-            return ResponseEntity.status(HttpStatus.OK).body(userDataProvider.getAll(page, size, tokenValid));
-        } else {
-            throw new InvalidTokenException();
-        }
+        return ResponseEntity.status(HttpStatus.OK).body(userDataProvider.getAll(page, size, token));
     }
 
+    @Override
     public ResponseEntity<?> signOutUser(UserOutDomain domain) throws Exception {
 
         useCaseUser.savedUserOutVerify(domain);
 
         var entity = userGateway.saveOut(domain);
 
-        AuthenticationResponse authenticationResponse = new AuthenticationResponse(JwtUtils.generateTokenForUserOut(entity, entity.getId()), JwtUtils.generateRefreshTokenForUserOut(entity, entity.getId()), null);
+        AuthenticationResponse authenticationResponse = new AuthenticationResponse(JwtUtils.generateExternalAccessTokenForUser(entity, entity.getId()), JwtUtils.generateExternalRefreshTokenForUser(entity, entity.getId()));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(authenticationResponse);
     }
+
+    @Override
+    public ResponseEntity<?> refreshToken(String token) throws Exception {
+
+        var id = JwtUtils.getIdFromToken(token);
+
+        var userVerify = userDataProvider.refreshToken(id);
+
+        AuthenticationResponse authenticationResponse = new AuthenticationResponse(JwtUtils.generateExternalRefreshTokenForUser(userVerify, userVerify.getId()));
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(authenticationResponse);
+    }
+
 
 }
